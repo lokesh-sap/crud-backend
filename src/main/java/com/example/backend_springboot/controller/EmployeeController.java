@@ -36,13 +36,13 @@ public class EmployeeController {
     }
 
     @PutMapping("/employees/{id}")
-        public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails) {
-        Employee employee= employeeRepositary.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with the id: "+id));
+    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails) {
+        Employee employee = employeeRepositary.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with the id: " + id));
         employee.setFirstname(employeeDetails.getFirstname());
         employee.setLastname(employeeDetails.getLastname());
         employee.setEmailId(employeeDetails.getEmailId());
-        Employee updatedEmployee = employeeRepositary.save(employee);
+        Employee updatedEmployee = employeeRepositary.update(employee);
         return ResponseEntity.ok(updatedEmployee);
     }
 
