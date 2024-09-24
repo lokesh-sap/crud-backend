@@ -19,18 +19,14 @@ public class EmployeeRepositary {
         return new ArrayList<>(employeeList);
     }
 
-    // Save a new employee
     public Employee save(Employee employee) {
         if (employee.getId() == null) {
-            // Assign a new ID for a new employee
             employee.setId(idCounter.getAndIncrement());
         }
-        // Add the new employee to the list
         employeeList.add(employee);
         return employee;
     }
 
-    // Update an existing employee
     public Employee update(Employee employee) {
         Optional<Employee> existingEmployee = findById(employee.getId());
         if (existingEmployee.isPresent()) {
@@ -43,14 +39,12 @@ public class EmployeeRepositary {
         }
     }
 
-    // Find employee by ID
     public Optional<Employee> findById(Long id) {
         return employeeList.stream()
                 .filter(emp -> emp.getId().equals(id))
                 .findFirst();
     }
 
-    // Delete an employee
     public void delete(Employee employee) {
         employeeList.removeIf(emp -> emp.getId().equals(employee.getId()));
     }
