@@ -8,5 +8,30 @@ applications:
     buildpacks:
       - java_buildpack
     env:
-      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 17.+ } }'
       SPRING_PROFILES_ACTIVE: cloud
+      logging:
+        level:
+          root: INFO
+          com.sap.xs.audit: INFO
+      SAP_AUDITLOG_FALLBACK_CONFIG: |
+        {
+          "url": "https://demo1-auditlog-buffer.cert.cfapps.sap.hana.ondemand.com",
+          "enableFallback": true,
+          "httpClient": {
+            "connectionTimeout": 1,
+            "readTimeout": 2,
+            "connectionRequestTimeout": 5,
+            "keepAliveTimeout": 45,
+            "maxConnectionsTotal": 100,
+            "maxConnectionsPerRoute": 100
+          },
+          "circuitBreaker": {
+            "failureRateThreshold": 50,
+            "slowCallRateThreshold": 50,
+            "waitDurationInOpenStateInSeconds": 60,
+            "slowCallDurationThresholdInMillis": 2000,
+            "permittedNumberOfCallsInHalfOpenState": 3,
+            "minimumNumberOfCalls": 30
+          }
+        }

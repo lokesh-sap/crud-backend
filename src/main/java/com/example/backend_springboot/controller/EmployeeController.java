@@ -2,12 +2,11 @@ package com.example.backend_springboot.controller;
 
 import com.example.backend_springboot.exception.ResourceNotFoundException;
 import com.example.backend_springboot.model.Employee;
-import com.example.backend_springboot.model.Image;
 import com.example.backend_springboot.repositary.EmployeeRepositary;
-import com.example.backend_springboot.repositary.ImageRepositary;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sap.xs.audit.api.exception.AuditLogException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -15,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = "https://sap-employees-info.cfapps.us10-001.hana.ondemand.com")
+@CrossOrigin(origins = "https://sap-employees-info.cfapps.sap.hana.ondemand.com")
 @RequestMapping("/api/v1/")
 public class EmployeeController {
     @Autowired
@@ -27,19 +26,19 @@ public class EmployeeController {
     }
 
     @PostMapping("/employees")
-    public Employee createEmployee(@RequestBody Employee employee){
+    public Employee createEmployee(@RequestBody Employee employee) throws AuditLogException, JsonProcessingException {
         return employeeRepositary.save(employee);
     }
 
     @GetMapping("/employees/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id){
-        Employee employee= employeeRepositary.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with the id: "+id));
+    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
+        Employee employee = employeeRepositary.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with the id: " + id));
         return ResponseEntity.ok(employee);
     }
 
     @PutMapping("/employees/{id}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails) {
+    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employeeDetails) throws AuditLogException {
         Employee employee = employeeRepositary.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with the id: " + id));
         employee.setFirstname(employeeDetails.getFirstname());
@@ -50,18 +49,12 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/employees/{id}")
-    public ResponseEntity<Map<String, Boolean>> deleteEmployee(@PathVariable Long id){
-        Employee employee= employeeRepositary.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with the id: "+id));
+    public ResponseEntity<Map<String, Boolean>> deleteEmployee(@PathVariable Long id) throws AuditLogException {
+        Employee employee = employeeRepositary.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with the id: " + id));
         employeeRepositary.delete(employee);
-        Map<String,Boolean> res=new HashMap<>();
+        Map<String, Boolean> res = new HashMap<>();
         res.put("deleted", true);
         return ResponseEntity.ok(res);
     }
-
-        @RequestMapping("/employees/images")
-        public Long getImages() {
-            return 1122L;
-        }
-
 }
