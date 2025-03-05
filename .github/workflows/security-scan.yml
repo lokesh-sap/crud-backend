@@ -1,4 +1,4 @@
-name: Security Scan CI/CD
+name: Java Spring Boot Security Scan
 
 on:
   push:
@@ -14,31 +14,38 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v1
-
-      # Build Docker Image
-      - name: Build Docker Image
-        run: docker build -t myapp:latest .
-
-      # Scan Docker Image with Trivy
-      - name: Scan Docker Image with Trivy
-        uses: aquasecurity/trivy-action@master
+      # Set up Java and build the app
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
         with:
-          image-ref: 'myapp:latest'
-          format: 'table'
-          exit-code: 1
-          severity: 'CRITICAL,HIGH'
+          distribution: 'temurin'
+          java-version: '17'
 
-      # Scan Code & Dependencies with Snyk
-      - name: Snyk Security Scan
-        uses: snyk/actions/node@master
+      - name: Build with Maven
+        run: mvn clean package
+
+      # Scan for dependency vulnerabilities with Snyk
+      - name: Snyk Code and Dependency Scan
+        uses: snyk/actions/maven@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: false
 
-      # Optional: Scan IaC with Checkov
-      - name: Checkov Scan (Terraform/K8s)
+      # Build Docker image
+      - name: Build Docker Image
+        run: docker build -t spring-boot-app .
+
+      # Scan Docker image vulnerabilities with Trivy
+      - name: Trivy Docker Image Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'spring-boot-app:latest'
+          format: 'table'
+          exit-code: 1
+          severity: 'CRITICAL,HIGH'
+
+      # Optional: Scan Infrastructure-as-Code with Checkov
+      - name: Checkov IaC Scan
         uses: bridgecrewio/checkov-action@v12
         with:
           directory: .
