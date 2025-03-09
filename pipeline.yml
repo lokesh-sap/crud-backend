@@ -1,0 +1,63 @@
+resources:
+  - name: app-repo
+    type: git
+    source:
+      uri: https://github.com/lokesh-sap/crud-backend.git
+      branch: main
+
+jobs:
+  - name: build-and-scan
+    plan:
+      - get: app-repo
+        trigger: true
+
+      - task: build-app
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source: { repository: maven, tag: '3.9.1-eclipse-temurin-17' }
+          inputs:
+            - name: app-repo
+          outputs:
+            - name: app-repo
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                cd app-repo
+                mvn clean package
+
+      - task: scan-docker-image
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source: { repository: aquasec/trivy }
+          inputs:
+            - name: app-repo
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                cd app-repo
+                docker build -t spring-boot-app .
+                trivy image --severity HIGH,CRITICAL --exit-code 1 spring-boot-app
+
+      - task: snyk-scan
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source: { repository: snyk/snyk }
+          inputs:
+            - name: app-repo
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                cd app-repo
+                snyk test --all-projects || exit 1
